@@ -93,6 +93,8 @@ opt.expandtab = true                        -- tab is spaces
 
 augroup('setLangIndent', { clear = true })
 
+augroup('miscSetup', { clear = true })
+
 -- Set indentation to 2 spaces for specified file types
 autocmd('Filetype', {
   group = 'setLangIndent',
@@ -123,6 +125,18 @@ autocmd('Filetype', {
   command = 'setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 expandtab autoindent fileformat=unix'
 })
 
+-- Java nvim-jdtls run
+autocmd('Filetype', {
+  group = 'miscSetup',
+  pattern = { 'java' },
+  command = 'lua NvimJdtlsSetup()'
+})
+
+-- Enter insert mode when switching to terminal
+autocmd('TermOpen', {
+  command = 'setlocal listchars= nonumber norelativenumber nocursorline',
+})
+
 --------------------------
 -- Buffers
 --------------------------
@@ -141,6 +155,12 @@ map('n', '<S-h>', ':bprev<CR>', default_opts)
 
 -- next buffer key
 map('n', '<S-l>', ':bnext<CR>', default_opts)
+
+-- quit neovim shortcut
+map('n', '<C-q>', ':qa<CR>', default_opts)
+
+-- close buffer
+map('n', '<C-w>', ':bd!<CR>', default_opts)
 
 -- closing buffer
 -- cmd [[nnoremap <c-w> :lua Close_buffer()<CR>]]
@@ -311,6 +331,11 @@ require('packer').startup(function(use)
     'https://github.com/L3MON4D3/LuaSnip',
     branch = "master"
   }
+
+  use {
+    'https://github.com/mfussenegger/nvim-jdtls',
+    branch = "master"
+  }
 end)
 
 
@@ -363,7 +388,7 @@ BufferLineSetup()
 
 -- NVIM-LSPCONFIG
 function NvimLspConfigSetup()
-  require('lspconfig').jdtls.setup {}
+  -- require('lspconfig').jdtls.setup {}
   require('lspconfig').lua_ls.setup {
     on_init = function(client)
       local path = client.workspace_folders[1].name
@@ -457,7 +482,7 @@ function NvimCmpSetup()
   local lspconfig = require('lspconfig')
 
   -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
-  local servers = { 'lua_ls', 'jdtls' }
+  local servers = { 'lua_ls' }
   for _, lsp in ipairs(servers) do
     lspconfig[lsp].setup {
       -- on_attach = my_custom_on_attach,
@@ -467,7 +492,7 @@ function NvimCmpSetup()
 
   -- luasnip setup
   local luasnip = require 'luasnip'
-  
+
 
   -- nvim-cmp setup
   local cmp = require 'cmp'
@@ -542,3 +567,39 @@ function NvimCmpSetup()
 end
 
 NvimCmpSetup()
+
+function NvimJdtlsSetup()
+  -- See `:help vim.lsp.start_client` for an overview of the supported `config` options.
+  local config = {
+    -- The command that starts the language server
+    -- See: https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
+    cmd = { "jdtls", "-configuration", "/home/user/.cache/jdtls/config", "-data", "/home/user/.cache/jdtls/workspace" },
+    -- This is the default if not provided, you can remove it. Or adjust as needed.
+    -- One dedicated LSP server & client will be started per unique root_dir
+    root_dir = require('jdtls.setup').find_root({ '.git', 'mvnw', 'gradlew' }),
+
+    -- Here you can configure eclipse.jdt.ls specific settings
+    -- See https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
+    -- for a list of options
+    settings = {
+      java = {
+      }
+    },
+
+    -- Language server `initializationOptions`
+    -- You need to extend the `bundles` with paths to jar files
+    -- if you want to use additional eclipse.jdt.ls plugins.
+    --
+    -- See https://github.com/mfussenegger/nvim-jdtls#java-debug-installation
+    --
+    -- If you don't plan on using the debugger or other eclipse.jdt.ls plugins you can remove this
+    init_options = {
+      bundles = {}
+    },
+  }
+  -- This starts a new client & server,
+  -- or attaches to an existing client & server depending on the `root_dir`.
+  require('jdtls').start_or_attach(config)
+end
+
+NvimJdtlsSetup()
