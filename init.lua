@@ -372,7 +372,16 @@ function NvimTreeSetup()
     default_opts
   )
 
-  require("nvim-tree").setup()
+  require("nvim-tree").setup({
+    filters = {
+      git_ignored = false,
+      dotfiles = false,
+      git_clean = false,
+      no_buffer = false,
+      custom = {},
+      exclude = {},
+    }
+  })
 end
 
 NvimTreeSetup()
@@ -681,6 +690,8 @@ function NvimDapSetup()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.scopes)
   end)
+
+  require('dap.ext.vscode').load_launchjs()
 end
 
 NvimDapSetup()
