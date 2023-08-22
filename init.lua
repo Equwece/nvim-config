@@ -3,6 +3,13 @@ local opt = vim.opt
 local g = vim.g
 local cmd = vim.cmd -- execute Vim commands
 
+---------------------
+-- TODO: Remove
+opt.runtimepath:append('~/.config/nvim2')
+
+require('misc_utils')
+---------------------
+
 --------------------
 -- Basic
 --------------------
@@ -43,9 +50,6 @@ opt.formatoptions:remove { "t", "c" }
 
 -- Enable filetype plugin
 cmd [[filetype plugin on]]
-
--- TODO: Remove
-opt.runtimepath:append('~/.config/nvim2')
 
 -------------------------
 -- Keymaps
@@ -127,20 +131,6 @@ autocmd('Filetype', {
   group = 'setLangIndent',
   pattern = { 'python' },
   command = 'setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 expandtab autoindent fileformat=unix'
-})
-
--- Java indent setup
-autocmd('Filetype', {
-  group = 'setLangIndent',
-  pattern = { 'java' },
-  command = 'setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 expandtab autoindent fileformat=unix'
-})
-
--- Java nvim-jdtls run
-autocmd('Filetype', {
-  group = 'miscSetup',
-  pattern = { 'java' },
-  command = 'lua NvimJdtlsSetup()'
 })
 
 -- Enter insert mode when switching to terminal
@@ -358,6 +348,12 @@ require('packer').startup(function(use)
   -- nvim-dap client
   use {
     'https://github.com/mfussenegger/nvim-dap',
+    branch = "master"
+  }
+
+  -- dap ui
+  use {
+    'https://github.com/rcarriga/nvim-dap-ui',
     branch = "master"
   }
 end)
@@ -592,48 +588,7 @@ end
 
 NvimCmpSetup()
 
--- JDTLS SETUP
-function NvimJdtlsSetup()
-  -- See `:help vim.lsp.start_client` for an overview of the supported `config` options.
-  local config = {
-    -- The command that starts the language server
-    -- See: https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
-    cmd = { "jdtls", "-configuration", "/home/user/.cache/jdtls/config", "-data", "/home/user/.cache/jdtls/workspace" },
-    -- This is the default if not provided, you can remove it. Or adjust as needed.
-    -- One dedicated LSP server & client will be started per unique root_dir
-    root_dir = require('jdtls.setup').find_root({ '.git', 'mvnw', 'gradlew' }),
-
-    -- Here you can configure eclipse.jdt.ls specific settings
-    -- See https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
-    -- for a list of options
-    settings = {
-      java = {
-      }
-    },
-
-    -- Language server `initializationOptions`
-    -- You need to extend the `bundles` with paths to jar files
-    -- if you want to use additional eclipse.jdt.ls plugins.
-    --
-    -- See https://github.com/mfussenegger/nvim-jdtls#java-debug-installation
-    --
-    -- If you don't plan on using the debugger or other eclipse.jdt.ls plugins you can remove this
-    init_options = {
-      bundles = {
-        vim.fn.glob(
-          "/home/user/.local/share/java-debug/com.microsoft.java.debug.plugin/target/com.microsoft.java.debug.plugin-0.48.0.jar",
-          1)
-      },
-    },
-  }
-  -- This starts a new client & server,
-  -- or attaches to an existing client & server depending on the `root_dir`.
-  -- require('jdtls.dap').setup_dap_main_class_configs()
-  require('jdtls').start_or_attach(config)
-end
-
 ---- TELESCOPE SETUP
-
 function TelescopeSetup()
   map('n', '<leader>ff', ':Telescope find_files hidden=true<CR>', default_opts)
   map('n', '<leader>fg', ':Telescope live_grep<CR>', default_opts)
@@ -697,8 +652,16 @@ function NvimDapSetup()
   keymap('n', '<F11>', function() require('dap').step_into() end, default_opts)
   keymap('n', '<F12>', function() require('dap').step_out() end, default_opts)
   keymap('n', '<leader>dc', function() require('dap').continue() end, default_opts)
-  keymap('n', '<leader>dt', function() require('dap').terminate() end, default_opts)
+  keymap('n', '<leader>dt', function()
+    local dap = require('dap')
+    local dapui = require('dapui')
+    dap.terminate()
+    dap.close()
+    dapui.close()
+    dap.repl.close()
+  end, default_opts)
   keymap('n', '<leader>db', function() require('dap').toggle_breakpoint() end, default_opts)
+  keymap('n', '<leader>dm', function() require('dap').clear_breakpoints() end, default_opts)
   keymap('n', '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
     default_opts)
   keymap('n', '<leader>lr', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
@@ -718,15 +681,41 @@ function NvimDapSetup()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.scopes)
   end)
-
-
-  -- Close dap-float buffers via 'q' button
-  autocmd('Filetype', {
-    group = 'miscSetup',
-    pattern = { 'dap-float' },
-    command = 'lua NvimJdtlsSetup()'
-  })
-
 end
 
 NvimDapSetup()
+
+-- TODO COMMENTS SETUP
+function TodoCommentsSetup()
+  require("todo-comments").setup {}
+
+  -- Search todo via Telescope plugin
+  map('n', '<leader>ft', ':TodoTelescope<CR>', default_opts)
+end
+
+TodoCommentsSetup()
+
+
+-- DAP-UI
+function DapUiSetup()
+  local dapui = require('dapui')
+  local dap = require('dap')
+  dapui.setup()
+
+  -- Add dap ui to dap
+  dap.listeners.after.event_initialized["dapui_config"] = function()
+    dapui.open()
+    dap.repl.close()
+    dap.repl.open()
+  end
+  dap.listeners.before.event_terminated["dapui_config"] = function()
+    dap.repl.close()
+    dapui.close()
+  end
+  dap.listeners.before.event_exited["dapui_config"] = function()
+    dap.repl.close()
+    dapui.close()
+  end
+end
+
+DapUiSetup()
