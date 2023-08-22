@@ -53,6 +53,11 @@ local default_opts = { noremap = true, silent = true }
 g.mapleader = ","
 g.maplocalleader = ","
 
+
+-- skip fake lines
+map('n', 'j', 'gj', default_opts)
+map('n', 'k', 'gk', default_opts)
+
 -------------------------
 -- Search
 -------------------------
@@ -534,7 +539,7 @@ function NvimCmpSetup()
       { name = 'nvim_lsp' },
       { name = 'luasnip' },
       { name = 'buffer' },
-      { name = 'filepath' },
+      { name = 'path' },
     },
   }
 
