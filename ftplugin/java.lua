@@ -6,20 +6,6 @@ vim.cmd('setlocal tabstop=4 softtabstop=4 shiftwidth=4 textwidth=80 expandtab au
 
 -- JDTLS SETUP
 function NvimJdtlsSetup()
-  local function isJdtlsAttached()
-    local client_tbl = vim.lsp.get_active_clients()
-    for index, data in ipairs(client_tbl) do
-      for key, value in pairs(data) do
-        if key == "name" then
-          if value == "jdtls" then
-            return true
-          end
-        end
-      end
-      return false
-    end
-  end
-
   -- See `:help vim.lsp.start_client` for an overview of the supported `config` options.
   local config = {
     -- The command that starts the language server
