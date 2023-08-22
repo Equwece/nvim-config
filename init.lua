@@ -41,6 +41,12 @@ opt.linebreak = true -- Stop Vim wrapping lines in the middle of a word
 
 opt.formatoptions:remove { "t", "c" }
 
+-- Enable filetype plugin
+cmd [[filetype plugin on]]
+
+-- TODO: Remove
+opt.runtimepath:append('~/.config/nvim2')
+
 -------------------------
 -- Keymaps
 -------------------------
@@ -348,6 +354,12 @@ require('packer').startup(function(use)
     'nvim-telescope/telescope.nvim',
     tag = '0.1.2',
   }
+
+  -- nvim-dap client
+  use {
+    'https://github.com/mfussenegger/nvim-dap',
+    branch = "master"
+  }
 end)
 
 
@@ -607,15 +619,18 @@ function NvimJdtlsSetup()
     --
     -- If you don't plan on using the debugger or other eclipse.jdt.ls plugins you can remove this
     init_options = {
-      bundles = {}
+      bundles = {
+        vim.fn.glob(
+          "/home/user/.local/share/java-debug/com.microsoft.java.debug.plugin/target/com.microsoft.java.debug.plugin-0.48.0.jar",
+          1)
+      },
     },
   }
   -- This starts a new client & server,
   -- or attaches to an existing client & server depending on the `root_dir`.
+  -- require('jdtls.dap').setup_dap_main_class_configs()
   require('jdtls').start_or_attach(config)
 end
-
-NvimJdtlsSetup()
 
 ---- TELESCOPE SETUP
 
@@ -673,3 +688,45 @@ function TelescopeSetup()
 end
 
 TelescopeSetup()
+
+function NvimDapSetup()
+  vim.fn.sign_define('DapBreakpoint', { text = '🔴', texthl = '', linehl = '', numhl = '' })
+  vim.fn.sign_define('DapStopped', { text = '🔵', texthl = '', linehl = '', numhl = '' })
+
+  keymap('n', '<F10>', function() require('dap').step_over() end, default_opts)
+  keymap('n', '<F11>', function() require('dap').step_into() end, default_opts)
+  keymap('n', '<F12>', function() require('dap').step_out() end, default_opts)
+  keymap('n', '<leader>dc', function() require('dap').continue() end, default_opts)
+  keymap('n', '<leader>dt', function() require('dap').terminate() end, default_opts)
+  keymap('n', '<leader>db', function() require('dap').toggle_breakpoint() end, default_opts)
+  keymap('n', '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
+    default_opts)
+  keymap('n', '<leader>lr', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+    default_opts)
+  keymap('n', '<leader>dr', function() require('dap').repl.open() end, default_opts)
+  keymap({ 'n', 'v' }, '<leader>dh', function()
+    require('dap.ui.widgets').hover()
+  end)
+  keymap({ 'n', 'v' }, '<leader>dp', function()
+    require('dap.ui.widgets').preview()
+  end)
+  keymap('n', '<leader>df', function()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.frames)
+  end)
+  keymap('n', '<leader>ds', function()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.scopes)
+  end)
+
+
+  -- Close dap-float buffers via 'q' button
+  autocmd('Filetype', {
+    group = 'miscSetup',
+    pattern = { 'dap-float' },
+    command = 'lua NvimJdtlsSetup()'
+  })
+
+end
+
+NvimDapSetup()
