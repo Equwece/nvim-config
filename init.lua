@@ -114,7 +114,7 @@ augroup('miscSetup', { clear = true })
 autocmd('Filetype', {
   group = 'setLangIndent',
   pattern = { 'xml', 'html', 'xhtml', 'css', 'scss', 'javascript', 'typescript',
-    'yaml', 'lua', 'yaml', 'haskell', 'scala', 'purescript', 'nix', 'markdown', 'vim'
+    'yaml', 'lua', 'yaml', 'haskell', 'scala', 'purescript', 'nix', 'markdown', 'vim', 'svelte'
   },
   command = 'setlocal shiftwidth=2 softtabstop=2'
 })
@@ -373,6 +373,9 @@ function NvimTreeSetup()
   )
 
   require("nvim-tree").setup({
+    renderer = {
+      group_empty = true,
+    },
     filters = {
       git_ignored = false,
       dotfiles = false,
@@ -417,7 +420,14 @@ BufferLineSetup()
 
 -- NVIM-LSPCONFIG
 function NvimLspConfigSetup()
-  -- require('lspconfig').jdtls.setup {}
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+  require('lspconfig').tsserver.setup {}
+  require('lspconfig').svelte.setup {}
+  require('lspconfig').cssls.setup {}
+  require('lspconfig').html.setup {
+    capabilities = capabilities
+  }
   require('lspconfig').lua_ls.setup {
     on_init = function(client)
       local path = client.workspace_folders[1].name
@@ -470,7 +480,7 @@ function NvimLspConfigSetup()
       end, opts)
       keymap('n', '<space>D', vim.lsp.buf.type_definition, opts)
       keymap('n', '<space>rn', vim.lsp.buf.rename, opts)
-      keymap({ 'n', 'v' }, '<space>ca', vim.lsp.buf.code_action, opts)
+      keymap({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
       keymap('n', 'gr', vim.lsp.buf.references, opts)
       keymap('n', '<space>f', function()
         vim.lsp.buf.format { async = true }
@@ -610,6 +620,7 @@ function TelescopeSetup()
     defaults = {
       -- Default configuration for telescope goes here:
       -- config_key = value,
+      file_ignore_patterns = { ".git/" },
       mappings = {
         i = {
           ["<esc>"] = require('telescope.actions').close,
