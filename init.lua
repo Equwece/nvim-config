@@ -14,25 +14,25 @@ require('misc_utils')
 -- Basic
 --------------------
 
-g.XkbSwitchEnabled = 1        -- ?
+g.XkbSwitchEnabled = 1                                             -- ?
 
-opt.encoding = 'UTF-8'        -- set encoding
+opt.encoding = 'UTF-8'                                             -- set encoding
 
-opt.mouse = 'a'               -- enable mouse
+opt.mouse = 'a'                                                    -- enable mouse
 
-opt.number = true             -- show line of numbers
+opt.number = true                                                  -- show line of numbers
 
-opt.showcmd = true            -- show last command in bottom bar
+opt.showcmd = true                                                 -- show last command in bottom bar
 
-opt.cursorline = true         -- highlight current line
+opt.cursorline = true                                              -- highlight current line
 
-opt.wildmenu = true           -- visual autocomplete for command menu
+opt.wildmenu = true                                                -- visual autocomplete for command menu
 
-opt.lazyredraw = true         -- redraw only when we need to
+opt.lazyredraw = true                                              -- redraw only when we need to
 
-opt.showmatch = true          -- highlight mathching [{()}]
+opt.showmatch = true                                               -- highlight mathching [{()}]
 
-opt.clipboard = 'unnamedplus' -- enable clipboard in nvim
+opt.clipboard = 'unnamedplus'                                      -- enable clipboard in nvim
 
 -- opt.relativenumber = true -- relative number lines
 
@@ -188,6 +188,13 @@ autocmd('BufEnter', {
   command = 'set fo-=c fo-=r fo-=o'
 })
 
+-- Enable nix comments
+autocmd('Filetype', {
+  group = 'setLangIndent',
+  pattern = { 'nix' },
+  command = 'setlocal commentstring=#%s'
+})
+
 --------------------
 -- PLUGINS
 --------------------
@@ -254,18 +261,12 @@ require('packer').startup(function(use)
   use {
     'https://github.com/nvim-lualine/lualine.nvim',
     branch = "master",
-    config = function()
-      require('lualine').setup()
-    end
   }
 
   -- Indent guides
   use {
     'https://github.com/lukas-reineke/indent-blankline.nvim',
     branch = "master",
-    config = function()
-      require("indent_blankline").setup()
-    end
   }
 
   -- Smart auto-pair
@@ -356,6 +357,13 @@ require('packer').startup(function(use)
     'https://github.com/rcarriga/nvim-dap-ui',
     branch = "master"
   }
+
+  -- Scala lsp: nvim-metals
+  use {
+    'scalameta/nvim-metals',
+    requires = { "nvim-lua/plenary.nvim" },
+    branch = "main"
+  }
 end)
 
 
@@ -425,6 +433,9 @@ function NvimLspConfigSetup()
   require('lspconfig').tsserver.setup {}
   require('lspconfig').svelte.setup {}
   require('lspconfig').cssls.setup {}
+  require('lspconfig').hls.setup {
+    filetypes = { 'haskell', 'lhaskell', 'cabal' },
+  }
   require('lspconfig').html.setup {
     capabilities = capabilities
   }
@@ -532,10 +543,17 @@ function NvimCmpSetup()
   -- luasnip setup
   local luasnip = require 'luasnip'
 
-
   -- nvim-cmp setup
   local cmp = require 'cmp'
   cmp.setup {
+    -- disable preselect
+    preselect = cmp.PreselectMode.None,
+    completeopt = {
+      "menu",
+      "menuone",
+      "noselect",
+      "noinsert"
+    },
     snippet = {
       expand = function(args)
         luasnip.lsp_expand(args.body)
@@ -548,7 +566,7 @@ function NvimCmpSetup()
       ['<C-Space>'] = cmp.mapping.complete(),
       ['<CR>'] = cmp.mapping.confirm {
         behavior = cmp.ConfirmBehavior.Replace,
-        select = true,
+        select = false,
       },
       ['<Tab>'] = cmp.mapping(function(fallback)
         if cmp.visible() then
@@ -741,3 +759,110 @@ function DapUiSetup()
 end
 
 DapUiSetup()
+
+-- INDENT-BLANKLINE (INDENT GUIDES)
+function IndentBlanklineSetup()
+  require("ibl").setup({
+    scope = { enabled = false },
+  })
+end
+
+IndentBlanklineSetup()
+
+-- Nvim-metals (Scala lsp)
+function NvimMetalsSetup()
+  local metals_config = require("metals").bare_config()
+
+  metals_config.settings = {
+    showImplicitArguments = true,
+    excludedPackages = {},
+  }
+
+  -- Showing useful info in status bar, but status bar must to support this
+  metals_config.init_options.statusBarProvider = "on"
+
+  metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+  -- Debug settings if you're using nvim-dap
+  local dap = require("dap")
+
+  dap.configurations.scala = {
+    {
+      type = "scala",
+      request = "launch",
+      name = "RunOrTest",
+      metals = {
+        runType = "runOrTestFile",
+      },
+    },
+  }
+
+  metals_config.on_attach = function(client, bufnr)
+    require("metals").setup_dap()
+  end
+
+  -- Autocmd that will actually be in charging of starting the whole thing
+  local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+  vim.api.nvim_create_autocmd("FileType", {
+    -- java support is excluded
+    pattern = { "scala", "sbt" },
+    callback = function()
+      require("metals").initialize_or_attach(metals_config)
+    end,
+    group = nvim_metals_group,
+  })
+end
+
+NvimMetalsSetup()
+
+function LuaLineSetup()
+  local function scalaMetals()
+    if vim.g['metals_status'] then
+      return vim.g['metals_status']
+    else
+      return ''
+    end
+  end
+  require('lualine').setup {
+    options = {
+      icons_enabled = true,
+      theme = 'auto',
+      component_separators = { left = '', right = '' },
+      section_separators = { left = '', right = '' },
+      disabled_filetypes = {
+        statusline = {},
+        winbar = {},
+      },
+      ignore_focus = {},
+      always_divide_middle = true,
+      globalstatus = false,
+      refresh = {
+        statusline = 1000,
+        tabline = 1000,
+        winbar = 1000,
+      }
+    },
+    sections = {
+      lualine_a = { 'mode' },
+      lualine_b = { 'branch', 'diff', 'diagnostics' },
+      lualine_c = { 'filename', scalaMetals },
+      lualine_x = { 'encoding', 'fileformat', 'filetype' },
+      lualine_y = { 'progress' },
+      lualine_z = { 'location' }
+    },
+    inactive_sections = {
+      lualine_a = {},
+      lualine_b = {},
+      lualine_c = { 'filename' },
+      lualine_x = { 'location' },
+      lualine_y = {},
+      lualine_z = {}
+    },
+    tabline = {},
+    winbar = {},
+    inactive_winbar = {},
+    extensions = {}
+  }
+end
+
+LuaLineSetup()
