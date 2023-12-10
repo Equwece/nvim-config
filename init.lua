@@ -4,9 +4,6 @@ local g = vim.g
 local cmd = vim.cmd -- execute Vim commands
 
 ---------------------
--- TODO: Remove
-opt.runtimepath:append('~/.config/nvim2')
-
 require('misc_utils')
 ---------------------
 
@@ -14,25 +11,25 @@ require('misc_utils')
 -- Basic
 --------------------
 
-g.XkbSwitchEnabled = 1                                             -- ?
+g.XkbSwitchEnabled = 1        -- ?
 
-opt.encoding = 'UTF-8'                                             -- set encoding
+opt.encoding = 'UTF-8'        -- set encoding
 
-opt.mouse = 'a'                                                    -- enable mouse
+opt.mouse = 'a'               -- enable mouse
 
-opt.number = true                                                  -- show line of numbers
+opt.number = true             -- show line of numbers
 
-opt.showcmd = true                                                 -- show last command in bottom bar
+opt.showcmd = true            -- show last command in bottom bar
 
-opt.cursorline = true                                              -- highlight current line
+opt.cursorline = true         -- highlight current line
 
-opt.wildmenu = true                                                -- visual autocomplete for command menu
+opt.wildmenu = true           -- visual autocomplete for command menu
 
-opt.lazyredraw = true                                              -- redraw only when we need to
+opt.lazyredraw = true         -- redraw only when we need to
 
-opt.showmatch = true                                               -- highlight mathching [{()}]
+opt.showmatch = true          -- highlight mathching [{()}]
 
-opt.clipboard = 'unnamedplus'                                      -- enable clipboard in nvim
+opt.clipboard = 'unnamedplus' -- enable clipboard in nvim
 
 -- opt.relativenumber = true -- relative number lines
 
@@ -433,6 +430,7 @@ function NvimLspConfigSetup()
   require('lspconfig').tsserver.setup {}
   require('lspconfig').svelte.setup {}
   require('lspconfig').cssls.setup {}
+  require('lspconfig').pyright.setup {}
   require('lspconfig').hls.setup {
     filetypes = { 'haskell', 'lhaskell', 'cabal' },
   }
@@ -554,6 +552,7 @@ function NvimCmpSetup()
       "noselect",
       "noinsert"
     },
+
     snippet = {
       expand = function(args)
         luasnip.lsp_expand(args.body)
@@ -786,16 +785,16 @@ function NvimMetalsSetup()
   -- Debug settings if you're using nvim-dap
   local dap = require("dap")
 
-  dap.configurations.scala = {
-    {
-      type = "scala",
-      request = "launch",
-      name = "RunOrTest",
-      metals = {
-        runType = "runOrTestFile",
-      },
-    },
-  }
+  -- dap.configurations.scala = {
+  --   {
+  --     type = "scala",
+  --     request = "launch",
+  --     name = "RunOrTest",
+  --     metals = {
+  --       runType = "runOrTestFile",
+  --     },
+  --   },
+  -- }
 
   metals_config.on_attach = function(client, bufnr)
     require("metals").setup_dap()
