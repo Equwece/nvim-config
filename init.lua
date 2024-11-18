@@ -3,6 +3,7 @@ local opt = vim.opt
 local g = vim.g
 local cmd = vim.cmd -- execute Vim commands
 
+
 ---------------------
 require('misc_utils')
 ---------------------
@@ -10,6 +11,7 @@ require('misc_utils')
 --------------------
 -- Basic
 --------------------
+
 
 g.XkbSwitchEnabled = 1        -- ?
 
@@ -91,9 +93,7 @@ map('n', '<C-l>', ':wincmd l<CR>', default_opts)
 -- Colorscheme
 -------------------------
 
-cmd 'colorscheme tokyonight' -- set colorscheme
-
-opt.termguicolors = true     -- set true colors
+opt.termguicolors = true -- set true colors
 
 --------------------------
 -- Tabs and spaces
@@ -160,21 +160,6 @@ map('n', '<C-q>', ':qa<CR>', default_opts)
 -- close buffer
 map('n', '<C-w>', ':bd!<CR>', default_opts)
 
--- closing buffer
--- cmd [[nnoremap <c-w> :lua Close_buffer()<CR>]]
--- function Close_buffer()
---   local view = require "nvim-tree.view"
---   local nvim_tree_api = require("nvim-tree.api")
---   if view.is_visible() then
---     nvim_tree_api.tree.close()
---     cmd [[bdel! %]]
---     nvim_tree_api.tree.open()
---     cmd [[wincmd l]]
---   else
---     cmd [[bdel! %]]
---   end
--- end
-
 --------------------
 -- Comments
 --------------------
@@ -196,754 +181,1257 @@ autocmd('Filetype', {
 -- PLUGINS
 --------------------
 
--- Only required if you have packer configured as `opt`
-vim.cmd [[packadd packer.nvim]]
-
--- PACKER INIT
-require('packer').startup(function(use)
-  use {
-    'wbthomason/packer.nvim',
-    branch = "master"
-  }
-
-  -- nvim-tree
-  use {
-    'nvim-tree/nvim-tree.lua',
-    branch = "master",
-  }
-
-  -- Icons for nvim-tree
-  use {
-    'nvim-tree/nvim-web-devicons',
-    branch = "master"
-  }
-
-  -- Colorscheme
-  use {
-    'folke/tokyonight.nvim',
-    branch = "main"
-  }
-
-  -- Bufferline
-  use {
-    'akinsho/bufferline.nvim',
-    tag = "v2.*"
-  }
-
-  -- display real css colors
-  use {
-    'https://github.com/ap/vim-css-color',
-    branch = "master"
-  }
-
-  -- Comments
-  use {
-    'https://github.com/tpope/vim-commentary',
-    branch = "master"
-  }
-
-  -- All the lua functions I don't want to write twice.
-  use {
-    "nvim-lua/plenary.nvim",
-    tag = "v0.1.3"
-  }
-
-  -- Todo highlight
-  use {
-    "folke/todo-comments.nvim",
-    tag = "v1.1.0"
-  }
-
-  -- Bottom line
-  use {
-    'https://github.com/nvim-lualine/lualine.nvim',
-    branch = "master",
-  }
-
-  -- Indent guides
-  use {
-    'https://github.com/lukas-reineke/indent-blankline.nvim',
-    branch = "master",
-  }
-
-  -- Smart auto-pair
-  use {
-    "windwp/nvim-autopairs",
-    config = function()
-      require("nvim-autopairs").setup {}
-    end
-  }
-
-  -- Nvim-lspconfig
-  use {
-    "https://github.com/neovim/nvim-lspconfig",
-    branch = "master"
-  }
-
-  -- Auto-session manager
-  use {
-    'rmagatti/auto-session',
-    branch = "main",
-    config = function()
-      require("auto-session").setup {
-        log_level = "error",
-        auto_session_suppress_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
-      }
-    end
-  }
-
-  -- Treesitter support
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    branch = "master"
-  }
-
-  -- LSP autocompletion
-  use {
-    'hrsh7th/cmp-nvim-lsp',
-    branch = "main"
-  }
-
-  use {
-    'hrsh7th/cmp-buffer',
-    branch = "main"
-  }
-  use {
-    'hrsh7th/cmp-path',
-    branch = "main"
-  }
-  use {
-    'hrsh7th/cmp-cmdline',
-    branch = "main"
-  }
-  use {
-    'hrsh7th/nvim-cmp',
-    branch = "main"
-  }
-
-  use {
-    'https://github.com/saadparwaiz1/cmp_luasnip',
-    branch = "master"
-  }
-
-  use {
-    'https://github.com/L3MON4D3/LuaSnip',
-    branch = "master"
-  }
-
-  -- Java LSP client plugin
-  use {
-    'https://github.com/mfussenegger/nvim-jdtls',
-    branch = "master"
-  }
-
-  -- Find, Filter, Preview, Pick.
-  use {
-    'nvim-telescope/telescope.nvim',
-    tag = '0.1.2',
-  }
-
-  -- nvim-dap client
-  use {
-    'https://github.com/mfussenegger/nvim-dap',
-    branch = "master"
-  }
-
-  -- dap ui
-  use {
-    'https://github.com/rcarriga/nvim-dap-ui',
-    branch = "master"
-  }
-
-  -- Scala lsp: nvim-metals
-  use {
-    'scalameta/nvim-metals',
-    requires = { "nvim-lua/plenary.nvim" },
-    branch = "main"
-  }
-end)
-
-
--- NVIM-TREE
-function NvimTreeSetup()
-  vim.g.loaded_netrw = 1
-  vim.g.loaded_netrwPlugin = 1
-
-  -- leader-g open tree
-  map(
-    'n',
-    '<leader>g',
-    ':NvimTreeToggle<CR>',
-    default_opts
-  )
-
-  require("nvim-tree").setup({
-    renderer = {
-      group_empty = true,
-    },
-    filters = {
-      git_ignored = false,
-      dotfiles = false,
-      git_clean = false,
-      no_buffer = false,
-      custom = {},
-      exclude = {},
-    }
-  })
+-- Bootstrap lazy.nvim
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { "Failed to clone lazy.nvim:\n", "ErrorMsg" },
+      { out,                            "WarningMsg" },
+      { "\nPress any key to exit..." },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
 end
+vim.opt.rtp:prepend(lazypath)
 
-NvimTreeSetup()
+require("lazy").setup({
+  spec = {
+    {
+      "folke/tokyonight.nvim",
+      lazy = false,    -- make sure we load this during startup if it is your main colorscheme
+      priority = 1000, -- make sure to load this before all the other start plugins
+      config = function()
+        -- load the colorscheme here
+        vim.cmd([[colorscheme tokyonight]])
+      end,
+    },
 
-
--- BUFFERLINE
-function BufferLineSetup()
-  require('bufferline').setup {
-    options = {
-      mode = "buffers",                    -- set to "tabs" to only show tabpages instead
-      close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
-      -- close_command = "NvimTreeClose",       -- can be a string | function, see "Mouse actions"
-      right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
-      left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
-      middle_mouse_command = nil,          -- can be a string | function, see "Mouse actions"
-      -- NOTE: this plugin is designed with this icon in mind,
-      -- and so changing this is NOT recommended, this is intended
-      -- as an escape hatch for people who cannot bear it for whatever reason
-      indicator = {
-        icon = '▎', -- this should be omitted if indicator style is not 'icon'
-        style = 'icon',
+    -- nvim-tree/filetree
+    {
+      'nvim-tree/nvim-tree.lua',
+      dependencies = {
+        'nvim-tree/nvim-web-devicons',
       },
-      buffer_close_icon = '',
-      modified_icon = '●',
-      close_icon = '',
-      left_trunc_marker = '',
-      right_trunc_marker = '',
-    },
-  }
-end
+      lazy = false,
+      config = function()
+        vim.g.loaded_netrw = 1
+        vim.g.loaded_netrwPlugin = 1
 
-BufferLineSetup()
+        -- leader-g open tree
+        map(
+          'n',
+          '<leader>g',
+          ':NvimTreeToggle<CR>',
+          default_opts
+        )
 
--- NVIM-LSPCONFIG
-function NvimLspConfigSetup()
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-  capabilities.textDocument.completion.completionItem.snippetSupport = true
-  require('lspconfig').tsserver.setup {}
-  require('lspconfig').svelte.setup {}
-  require('lspconfig').cssls.setup {}
-  require('lspconfig').pyright.setup {}
-  require('lspconfig').hls.setup {
-    filetypes = { 'haskell', 'lhaskell', 'cabal' },
-  }
-  require('lspconfig').html.setup {
-    capabilities = capabilities
-  }
-  require('lspconfig').lua_ls.setup {
-    on_init = function(client)
-      local path = client.workspace_folders[1].name
-      if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
-        client.config.settings = vim.tbl_deep_extend('force', client.config.settings.Lua, {
-          runtime = {
-            -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-            version = 'LuaJIT'
+        require("nvim-tree").setup({
+          renderer = {
+            group_empty = true,
           },
-          -- Make the server aware of Neovim runtime files
-          workspace = {
-            library = { vim.env.VIMRUNTIME }
-            -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
-            -- library = vim.api.nvim_get_runtime_file("", true)
+          filters = {
+            git_ignored = false,
+            dotfiles = false,
+            git_clean = false,
+            no_buffer = false,
+            custom = {},
+            exclude = {},
+          }
+        })
+      end
+    },
+
+    -- tabline/bufferline
+    {
+      'akinsho/bufferline.nvim',
+      dependencies = 'nvim-tree/nvim-web-devicons',
+      config = function()
+        require('bufferline').setup {
+          options = {
+            mode = "buffers",                    -- set to "tabs" to only show tabpages instead
+            close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
+            -- close_command = "NvimTreeClose",       -- can be a string | function, see "Mouse actions"
+            right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
+            left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
+            middle_mouse_command = nil,          -- can be a string | function, see "Mouse actions"
+            -- NOTE: this plugin is designed with this icon in mind,
+            -- and so changing this is NOT recommended, this is intended
+            -- as an escape hatch for people who cannot bear it for whatever reason
+            indicator = {
+              icon = '▎', -- this should be omitted if indicator style is not 'icon'
+              style = 'icon',
+            },
+            buffer_close_icon = '',
+            modified_icon = '●',
+            close_icon = '',
+            left_trunc_marker = '',
+            right_trunc_marker = '',
+          },
+        }
+      end
+    },
+
+    -- comments
+    {
+      'https://github.com/tpope/vim-commentary'
+    },
+
+    -- todo comments
+    {
+      "folke/todo-comments.nvim",
+      config = function()
+        require("todo-comments").setup {}
+
+        -- Search todo via Telescope plugin
+        map('n', '<leader>ft', ':TodoTelescope<CR>', default_opts)
+      end
+    },
+
+    -- telescope
+    {
+      'nvim-telescope/telescope.nvim',
+      config = function()
+        map('n', '<leader>ff', ':Telescope find_files hidden=true<CR>', default_opts)
+        map('n', '<leader>fg', ':Telescope live_grep<CR>', default_opts)
+        map('n', '<leader>fb', ':Telescope buffers<CR>', default_opts)
+        map('n', '<leader>fh', ':Telescope help_tags<CR>', default_opts)
+
+        local actions = require "telescope.actions"
+
+        require('telescope').setup {
+          defaults = {
+            -- Default configuration for telescope goes here:
+            -- config_key = value,
+            file_ignore_patterns = { ".git/" },
+            mappings = {
+              i = {
+                ["<esc>"] = require('telescope.actions').close,
+                ["<C-j>"] = actions.move_selection_next,
+                ["<C-k>"] = actions.move_selection_previous,
+              },
+              n = {
+                ["<C-j>"] = actions.move_selection_next,
+                ["<C-k>"] = actions.move_selection_previous,
+              }
+            },
+            vimgrep_arguments = {
+              'rg',
+              '--color=never',
+              '--no-heading',
+              '--with-filename',
+              '--line-number',
+              '--column',
+              '--smart-case',
+              '--hidden'
+            },
+          },
+          pickers = {
+            -- Default configuration for builtin pickers goes here:
+            -- picker_name = {
+            --   picker_config_key = value,
+            --   ...
+            -- }
+            -- Now the picker_config_key will be applied every time you call this
+            -- builtin picker
+          },
+          extensions = {
+            -- Your extension configuration goes here:
+            -- extension_name = {
+            --   extension_config_key = value,
+            -- }
+            -- please take a look at the readme of the extension you want to configure
+          }
+        }
+      end
+    },
+
+    -- indent guides
+    {
+      'https://github.com/lukas-reineke/indent-blankline.nvim',
+      config = function()
+        require("ibl").setup({
+          scope = { enabled = false },
+        })
+      end
+    },
+
+    -- treesitter support
+    {
+      'nvim-treesitter/nvim-treesitter',
+
+      config = function()
+        require('nvim-treesitter.configs').setup {
+          -- A list of parser names, or "all" (the five listed parsers should always be installed)
+          ensure_installed = { "c", "lua", "vim", "java", "scala", "haskell", "clojure", "json", "xml" },
+
+          -- Install parsers synchronously (only applied to `ensure_installed`)
+          sync_install = false,
+
+          -- Automatically install missing parsers when entering buffer
+          -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+          auto_install = true,
+
+          highlight = {
+            enable = true,
+          },
+          indent = {
+            enable = false
+          }
+        }
+      end
+    },
+
+    -- s-expressions
+    {
+      'guns/vim-sexp',
+      ft = { "clojure", "fennel" },
+      lazy = true,
+      dependencies = {
+        'tpope/vim-repeat',
+        'tpope/vim-sexp-mappings-for-regular-people'
+      }
+    },
+
+    -- conjure (repl)
+    {
+      "Olical/conjure",
+      ft = { "clojure", "fennel" },
+      lazy = true,
+    },
+
+    -- async builds (dispatch)
+    {
+      'tpope/vim-dispatch',
+      dependencies = { 'clojure-vim/vim-jack-in' }
+    },
+
+    -- lspconfig
+    {
+      "https://github.com/neovim/nvim-lspconfig",
+
+      config = function()
+        local capabilities = vim.lsp.protocol.make_client_capabilities()
+        capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+        local lspconfig = require('lspconfig')
+
+        lspconfig.clojure_lsp.setup {}
+
+        lspconfig.lua_ls.setup {
+          on_init = function(client)
+            local path = client.workspace_folders[1].name
+            if vim.loop.fs_stat(path .. '/.luarc.json') or vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+              return
+            end
+
+            client.config.settings.Lua = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+              runtime = {
+                -- Tell the language server which version of Lua you're using
+                -- (most likely LuaJIT in the case of Neovim)
+                version = 'LuaJIT'
+              },
+              -- Make the server aware of Neovim runtime files
+              workspace = {
+                checkThirdParty = false,
+                library = {
+                  vim.env.VIMRUNTIME
+                  -- Depending on the usage, you might want to add additional paths here.
+                  -- "${3rd}/luv/library"
+                  -- "${3rd}/busted/library",
+                }
+                -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+                -- library = vim.api.nvim_get_runtime_file("", true)
+              }
+            })
+          end,
+          settings = {
+            Lua = {}
+          }
+        }
+
+        -- See `:help vim.diagnostic.*` for documentation on any of the below functions
+        keymap('n', '<space>e', vim.diagnostic.open_float)
+        keymap('n', '[d', vim.diagnostic.goto_prev)
+        keymap('n', ']d', vim.diagnostic.goto_next)
+        keymap('n', '<space>q', vim.diagnostic.setloclist)
+
+        -- Use LspAttach autocommand to only map the following keys
+        -- after the language server attaches to the current buffer
+        autocmd('LspAttach', {
+          group = augroup('UserLspConfig', {}),
+          callback = function(ev)
+            -- Enable completion triggered by <c-x><c-o>
+            vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+            -- Buffer local mappings.
+            -- See `:help vim.lsp.*` for documentation on any of the below functions
+            local opts = { buffer = ev.buf }
+            keymap('n', 'gD', vim.lsp.buf.declaration, opts)
+            keymap('n', 'gd', vim.lsp.buf.definition, opts)
+            keymap('n', 'K', vim.lsp.buf.hover, opts)
+            keymap('n', 'gi', vim.lsp.buf.implementation, opts)
+            keymap('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+            keymap('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+            keymap('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+            keymap('n', '<space>wl', function()
+              print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+            end, opts)
+            keymap('n', '<space>D', vim.lsp.buf.type_definition, opts)
+            keymap('n', '<space>rn', vim.lsp.buf.rename, opts)
+            keymap({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
+            keymap('n', 'gr', vim.lsp.buf.references, opts)
+            keymap('n', '<space>f', function()
+              vim.lsp.buf.format { async = true }
+            end, opts)
+          end,
+        })
+      end
+    },
+
+    -- nvim-cmp (completion)
+    {
+      "hrsh7th/nvim-cmp",
+      event = "InsertEnter",
+      dependencies = {
+        "hrsh7th/cmp-nvim-lsp",
+        "hrsh7th/cmp-vsnip",
+        'hrsh7th/cmp-buffer',
+        'hrsh7th/cmp-path',
+        'hrsh7th/cmp-cmdline',
+        'saadparwaiz1/cmp_luasnip',
+        'L3MON4D3/LuaSnip',
+      },
+      config = function()
+        -- luasnip setup
+        local luasnip = require 'luasnip'
+
+        -- nvim-cmp setup
+        local cmp = require 'cmp'
+
+        cmp.setup {
+          -- disable preselect
+          preselect = cmp.PreselectMode.None,
+          completeopt = {
+            "menu",
+            "menuone",
+            "noselect",
+            "noinsert"
+          },
+
+          snippet = {
+            expand = function(args)
+              luasnip.lsp_expand(args.body)
+            end,
+          },
+          mapping = cmp.mapping.preset.insert({
+            ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
+            ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
+            -- C-b (back) C-f (forward) for snippet placeholder navigation.
+            ['<C-Space>'] = cmp.mapping.complete(),
+            ['<CR>'] = cmp.mapping.confirm {
+              behavior = cmp.ConfirmBehavior.Replace,
+              select = false,
+            },
+            ['<Tab>'] = cmp.mapping(function(fallback)
+              if cmp.visible() then
+                cmp.select_next_item()
+              elseif luasnip.expand_or_jumpable() then
+                luasnip.expand_or_jump()
+              else
+                fallback()
+              end
+            end, { 'i', 's' }),
+            ['<S-Tab>'] = cmp.mapping(function(fallback)
+              if cmp.visible() then
+                cmp.select_prev_item()
+              elseif luasnip.jumpable(-1) then
+                luasnip.jump(-1)
+              else
+                fallback()
+              end
+            end, { 'i', 's' }),
+          }),
+          sources = {
+            { name = 'nvim_lsp' },
+            { name = 'luasnip' },
+            { name = 'buffer' },
+            { name = 'path' },
+          },
+        }
+
+        -- Set configuration for specific filetype.
+        cmp.setup.filetype('gitcommit', {
+          sources = cmp.config.sources({
+            { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
+          }, {
+            { name = 'buffer' },
+          })
+        })
+
+        -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+        cmp.setup.cmdline({ '/', '?' }, {
+          mapping = cmp.mapping.preset.cmdline(),
+          sources = {
+            { name = 'buffer' }
           }
         })
 
-        client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
+        -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+        cmp.setup.cmdline(':', {
+          mapping = cmp.mapping.preset.cmdline(),
+          sources = cmp.config.sources({
+            { name = 'path' }
+          }, {
+            { name = 'cmdline' }
+          })
+        })
       end
-      return true
-    end
-  }
-
-  -- See `:help vim.diagnostic.*` for documentation on any of the below functions
-  keymap('n', '<space>e', vim.diagnostic.open_float)
-  keymap('n', '[d', vim.diagnostic.goto_prev)
-  keymap('n', ']d', vim.diagnostic.goto_next)
-  keymap('n', '<space>q', vim.diagnostic.setloclist)
-
-  -- Use LspAttach autocommand to only map the following keys
-  -- after the language server attaches to the current buffer
-  autocmd('LspAttach', {
-    group = augroup('UserLspConfig', {}),
-    callback = function(ev)
-      -- Enable completion triggered by <c-x><c-o>
-      vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
-
-      -- Buffer local mappings.
-      -- See `:help vim.lsp.*` for documentation on any of the below functions
-      local opts = { buffer = ev.buf }
-      keymap('n', 'gD', vim.lsp.buf.declaration, opts)
-      keymap('n', 'gd', vim.lsp.buf.definition, opts)
-      keymap('n', 'K', vim.lsp.buf.hover, opts)
-      keymap('n', 'gi', vim.lsp.buf.implementation, opts)
-      keymap('n', '<C-k>', vim.lsp.buf.signature_help, opts)
-      keymap('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
-      keymap('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
-      keymap('n', '<space>wl', function()
-        print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-      end, opts)
-      keymap('n', '<space>D', vim.lsp.buf.type_definition, opts)
-      keymap('n', '<space>rn', vim.lsp.buf.rename, opts)
-      keymap({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
-      keymap('n', 'gr', vim.lsp.buf.references, opts)
-      keymap('n', '<space>f', function()
-        vim.lsp.buf.format { async = true }
-      end, opts)
-    end,
-  })
-end
-
-NvimLspConfigSetup()
-
-function TreeSitterSetup()
-  require('nvim-treesitter.configs').setup {
-    -- A list of parser names, or "all" (the five listed parsers should always be installed)
-    ensure_installed = { "c", "lua", "vim", "java", "scala", "go", "haskell" },
-
-    -- Install parsers synchronously (only applied to `ensure_installed`)
-    sync_install = false,
-
-    -- Automatically install missing parsers when entering buffer
-    -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
-    auto_install = true,
-
-    highlight = {
-      enable = true,
     },
-    indent = {
-      enable = false
-    }
-  }
-end
-
-TreeSitterSetup()
-
-function NvimCmpSetup()
-  -- Add additional capabilities supported by nvim-cmp
-  local capabilities = require("cmp_nvim_lsp").default_capabilities()
-
-  local lspconfig = require('lspconfig')
-
-  -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
-  local servers = { 'lua_ls' }
-  for _, lsp in ipairs(servers) do
-    lspconfig[lsp].setup {
-      -- on_attach = my_custom_on_attach,
-      capabilities = capabilities,
-    }
-  end
-
-  -- luasnip setup
-  local luasnip = require 'luasnip'
-
-  -- nvim-cmp setup
-  local cmp = require 'cmp'
-  cmp.setup {
-    -- disable preselect
-    preselect = cmp.PreselectMode.None,
-    completeopt = {
-      "menu",
-      "menuone",
-      "noselect",
-      "noinsert"
-    },
-
-    snippet = {
-      expand = function(args)
-        luasnip.lsp_expand(args.body)
-      end,
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
-      ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
-      -- C-b (back) C-f (forward) for snippet placeholder navigation.
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<CR>'] = cmp.mapping.confirm {
-        behavior = cmp.ConfirmBehavior.Replace,
-        select = false,
-      },
-      ['<Tab>'] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-          cmp.select_next_item()
-        elseif luasnip.expand_or_jumpable() then
-          luasnip.expand_or_jump()
-        else
-          fallback()
-        end
-      end, { 'i', 's' }),
-      ['<S-Tab>'] = cmp.mapping(function(fallback)
-        if cmp.visible() then
-          cmp.select_prev_item()
-        elseif luasnip.jumpable(-1) then
-          luasnip.jump(-1)
-        else
-          fallback()
-        end
-      end, { 'i', 's' }),
-    }),
-    sources = {
-      { name = 'nvim_lsp' },
-      { name = 'luasnip' },
-      { name = 'buffer' },
-      { name = 'path' },
-    },
-  }
-
-  -- Set configuration for specific filetype.
-  cmp.setup.filetype('gitcommit', {
-    sources = cmp.config.sources({
-      { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline({ '/', '?' }, {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
-    })
-  })
-end
-
-NvimCmpSetup()
-
----- TELESCOPE SETUP
-function TelescopeSetup()
-  map('n', '<leader>ff', ':Telescope find_files hidden=true<CR>', default_opts)
-  map('n', '<leader>fg', ':Telescope live_grep<CR>', default_opts)
-  map('n', '<leader>fb', ':Telescope buffers<CR>', default_opts)
-  map('n', '<leader>fh', ':Telescope help_tags<CR>', default_opts)
-
-  local actions = require "telescope.actions"
-
-  require('telescope').setup {
-    defaults = {
-      -- Default configuration for telescope goes here:
-      -- config_key = value,
-      file_ignore_patterns = { ".git/" },
-      mappings = {
-        i = {
-          ["<esc>"] = require('telescope.actions').close,
-          ["<C-j>"] = actions.move_selection_next,
-          ["<C-k>"] = actions.move_selection_previous,
-        },
-        n = {
-          ["<C-j>"] = actions.move_selection_next,
-          ["<C-k>"] = actions.move_selection_previous,
-        }
-      },
-      vimgrep_arguments = {
-        'rg',
-        '--color=never',
-        '--no-heading',
-        '--with-filename',
-        '--line-number',
-        '--column',
-        '--smart-case',
-        '--hidden'
-      },
-    },
-    pickers = {
-      -- Default configuration for builtin pickers goes here:
-      -- picker_name = {
-      --   picker_config_key = value,
-      --   ...
-      -- }
-      -- Now the picker_config_key will be applied every time you call this
-      -- builtin picker
-    },
-    extensions = {
-      -- Your extension configuration goes here:
-      -- extension_name = {
-      --   extension_config_key = value,
-      -- }
-      -- please take a look at the readme of the extension you want to configure
-    }
-  }
-end
-
-TelescopeSetup()
-
-function NvimDapSetup()
-  vim.fn.sign_define('DapBreakpoint', { text = '🔴', texthl = '', linehl = '', numhl = '' })
-  vim.fn.sign_define('DapStopped', { text = '🔵', texthl = '', linehl = '', numhl = '' })
-
-  keymap('n', '<F10>', function() require('dap').step_over() end, default_opts)
-  keymap('n', '<F11>', function() require('dap').step_into() end, default_opts)
-  keymap('n', '<F12>', function() require('dap').step_out() end, default_opts)
-  keymap('n', '<leader>dc', function() require('dap').continue() end, default_opts)
-  keymap('n', '<leader>dt', function()
-    local dap = require('dap')
-    local dapui = require('dapui')
-    dap.terminate()
-    dap.close()
-    dapui.close()
-    dap.repl.close()
-  end, default_opts)
-  keymap('n', '<leader>db', function() require('dap').toggle_breakpoint() end, default_opts)
-  keymap('n', '<leader>dm', function() require('dap').clear_breakpoints() end, default_opts)
-  keymap('n', '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
-    default_opts)
-  keymap('n', '<leader>lr', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
-    default_opts)
-  keymap('n', '<leader>dr', function() require('dap').repl.open() end, default_opts)
-  keymap({ 'n', 'v' }, '<leader>dh', function()
-    require('dap.ui.widgets').hover()
-  end)
-  keymap({ 'n', 'v' }, '<leader>dp', function()
-    require('dap.ui.widgets').preview()
-  end)
-  keymap('n', '<leader>df', function()
-    local widgets = require('dap.ui.widgets')
-    widgets.centered_float(widgets.frames)
-  end)
-  keymap('n', '<leader>ds', function()
-    local widgets = require('dap.ui.widgets')
-    widgets.centered_float(widgets.scopes)
-  end)
-
-  require('dap.ext.vscode').load_launchjs()
-end
-
-NvimDapSetup()
-
--- TODO COMMENTS SETUP
-function TodoCommentsSetup()
-  require("todo-comments").setup {}
-
-  -- Search todo via Telescope plugin
-  map('n', '<leader>ft', ':TodoTelescope<CR>', default_opts)
-end
-
-TodoCommentsSetup()
-
-
--- DAP-UI
-function DapUiSetup()
-  local dapui = require('dapui')
-  local dap = require('dap')
-  dapui.setup(
     {
-      controls = {
-        element = "repl",
-        enabled = true,
-        icons = {
-          disconnect = "",
-          pause = "",
-          play = "",
-          run_last = "",
-          step_back = "",
-          step_into = "",
-          step_out = "",
-          step_over = "",
-          terminate = ""
+      'scalameta/nvim-metals',
+      dependencies = { "nvim-lua/plenary.nvim" },
+      ft = { "scala", "sbt" },
+      config = function(self)
+        local metals_config = require("metals").bare_config()
+
+        metals_config.settings = {
+          showImplicitArguments = true,
+          excludedPackages = {},
+          serverVersion = "1.3.4"
         }
-      },
-      element_mappings = {},
-      expand_lines = true,
-      floating = {
-        border = "single",
-        mappings = {
-          close = { "q", "<Esc>" }
-        }
-      },
-      force_buffers = true,
-      icons = {
-        collapsed = "",
-        current_frame = "",
-        expanded = ""
-      },
-      layouts = {
-        {
-          elements = {
-            {
-              id = "scopes",
-              size = 0.15
+
+        -- Showing useful info in status bar, but status bar must to support this
+        metals_config.init_options.statusBarProvider = "on"
+
+        metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+        -- Debug settings if you're using nvim-dap
+        -- local dap = require("dap")
+
+        -- dap.configurations.scala = {
+        --   {
+        --     type = "scala",
+        --     request = "launch",
+        --     name = "RunOrTest",
+        --     metals = {
+        --       runType = "runOrTestFile",
+        --     },
+        --   },
+        -- }
+
+        -- metals_config.on_attach = function(client, bufnr)
+        --   require("metals").setup_dap()
+        -- end
+
+        -- Autocmd that will actually be in charging of starting the whole thing
+        local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+        vim.api.nvim_create_autocmd("FileType", {
+          -- java support is excluded
+          pattern = self.ft,
+          callback = function()
+            require("metals").initialize_or_attach(metals_config)
+          end,
+          group = nvim_metals_group,
+        })
+      end
+
+    },
+    {
+      'nvim-lualine/lualine.nvim',
+      lazy = false,
+      config = function()
+        local function scalaMetals()
+          if vim.g['metals_status'] then
+            return vim.g['metals_status']
+          else
+            return ''
+          end
+        end
+        require('lualine').setup {
+          options = {
+            icons_enabled = true,
+            theme = 'auto',
+            component_separators = { left = '', right = '' },
+            section_separators = { left = '', right = '' },
+            disabled_filetypes = {
+              statusline = {},
+              winbar = {},
             },
-            {
-              id = "breakpoints",
-              size = 0.15
-            },
-            {
-              id = "stacks",
-              size = 0.15
-            },
-            {
-              id = "watches",
-              size = 0.15
+            ignore_focus = {},
+            always_divide_middle = true,
+            globalstatus = false,
+            refresh = {
+              statusline = 1000,
+              tabline = 1000,
+              winbar = 1000,
             }
           },
-          position = "left",
-          size = 30
-        },
-        {
-          elements = {
-            {
-              id = "repl",
-              size = 1
-            },
-            -- {
-            --   id = "console",
-            --   size = 0.5
-            -- }
+          sections = {
+            lualine_a = { 'mode' },
+            lualine_b = { 'branch', 'diff', 'diagnostics' },
+            lualine_c = { 'filename', scalaMetals },
+            lualine_x = { 'encoding', 'fileformat', 'filetype' },
+            lualine_y = { 'progress' },
+            lualine_z = { 'location' }
           },
-          position = "bottom",
-          size = 10
+          inactive_sections = {
+            lualine_a = {},
+            lualine_b = {},
+            lualine_c = { 'filename' },
+            lualine_x = { 'location' },
+            lualine_y = {},
+            lualine_z = {}
+          },
+          tabline = {},
+          winbar = {},
+          inactive_winbar = {},
+          extensions = {}
         }
-      },
-      mappings = {
-        edit = "e",
-        expand = { "<CR>", "<2-LeftMouse>" },
-        open = "o",
-        remove = "d",
-        repl = "r",
-        toggle = "t"
-      },
-      render = {
-        indent = 1,
-        max_value_lines = 100
-      }
+      end
     }
-  )
 
-  -- Add dap ui to dap
-  dap.listeners.after.event_initialized["dapui_config"] = function()
-    dapui.open()
-  end
-  dap.listeners.before.event_terminated["dapui_config"] = function()
-    -- Do not close ui and repl to examine errors and results
+  },
 
-    -- dapui.close()
-  end
-  dap.listeners.before.event_exited["dapui_config"] = function()
-    -- Do not close ui and repl to examine errors and results
 
-    -- dapui.close()
-  end
-end
+  -- Configure any other settings here. See the documentation for more details.
+  -- colorscheme that will be used when installing plugins.
+  install = {},
+  -- automatically check for plugin updates
+  checker = { enabled = true },
+})
 
-DapUiSetup()
 
--- INDENT-BLANKLINE (INDENT GUIDES)
-function IndentBlanklineSetup()
-  require("ibl").setup({
-    scope = { enabled = false },
-  })
-end
 
-IndentBlanklineSetup()
 
--- Nvim-metals (Scala lsp)
-function NvimMetalsSetup()
-  local metals_config = require("metals").bare_config()
 
-  metals_config.settings = {
-    showImplicitArguments = true,
-    excludedPackages = {},
-  }
 
-  -- Showing useful info in status bar, but status bar must to support this
-  metals_config.init_options.statusBarProvider = "on"
 
-  metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
 
-  -- Debug settings if you're using nvim-dap
-  local dap = require("dap")
 
-  -- dap.configurations.scala = {
-  --   {
-  --     type = "scala",
-  --     request = "launch",
-  --     name = "RunOrTest",
-  --     metals = {
-  --       runType = "runOrTestFile",
-  --     },
-  --   },
-  -- }
 
-  metals_config.on_attach = function(client, bufnr)
-    require("metals").setup_dap()
-  end
 
-  -- Autocmd that will actually be in charging of starting the whole thing
-  local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
-  vim.api.nvim_create_autocmd("FileType", {
-    -- java support is excluded
-    pattern = { "scala", "sbt" },
-    callback = function()
-      require("metals").initialize_or_attach(metals_config)
-    end,
-    group = nvim_metals_group,
-  })
-end
 
-NvimMetalsSetup()
 
-function LuaLineSetup()
-  local function scalaMetals()
-    if vim.g['metals_status'] then
-      return vim.g['metals_status']
-    else
-      return ''
-    end
-  end
-  require('lualine').setup {
-    options = {
-      icons_enabled = true,
-      theme = 'auto',
-      component_separators = { left = '', right = '' },
-      section_separators = { left = '', right = '' },
-      disabled_filetypes = {
-        statusline = {},
-        winbar = {},
-      },
-      ignore_focus = {},
-      always_divide_middle = true,
-      globalstatus = false,
-      refresh = {
-        statusline = 1000,
-        tabline = 1000,
-        winbar = 1000,
-      }
-    },
-    sections = {
-      lualine_a = { 'mode' },
-      lualine_b = { 'branch', 'diff', 'diagnostics' },
-      lualine_c = { 'filename', scalaMetals },
-      lualine_x = { 'encoding', 'fileformat', 'filetype' },
-      lualine_y = { 'progress' },
-      lualine_z = { 'location' }
-    },
-    inactive_sections = {
-      lualine_a = {},
-      lualine_b = {},
-      lualine_c = { 'filename' },
-      lualine_x = { 'location' },
-      lualine_y = {},
-      lualine_z = {}
-    },
-    tabline = {},
-    winbar = {},
-    inactive_winbar = {},
-    extensions = {}
-  }
-end
 
-LuaLineSetup()
+
+-- Only required if you have packer configured as `opt`
+-- vim.cmd [[packadd packer.nvim]]
+
+-- -- PACKER INIT
+-- require('packer').startup(function(use)
+
+--   -- display real css colors
+--   use {
+--     'https://github.com/ap/vim-css-color',
+--     branch = "master"
+--   }
+
+--   -- All the lua functions I don't want to write twice.
+--   use {
+--     "nvim-lua/plenary.nvim",
+--     tag = "v0.1.3"
+--   }
+
+--   -- Todo highlight
+--   use {
+--     "folke/todo-comments.nvim",
+--     tag = "v1.1.0"
+--   }
+
+--   -- Bottom line
+--   use {
+--     'https://github.com/nvim-lualine/lualine.nvim',
+--     branch = "master",
+--   }
+
+--   -- Indent guides
+--   use {
+--     'https://github.com/lukas-reineke/indent-blankline.nvim',
+--     branch = "master",
+--   }
+
+--   -- Smart auto-pair
+--   use {
+--     "windwp/nvim-autopairs",
+--     config = function()
+--       require("nvim-autopairs").setup {}
+--     end
+--   }
+
+--   -- Nvim-lspconfig
+--   use {
+--     "https://github.com/neovim/nvim-lspconfig",
+--     branch = "master"
+--   }
+
+--   -- Auto-session manager
+--   use {
+--     'rmagatti/auto-session',
+--     branch = "main",
+--     config = function()
+--       require("auto-session").setup {
+--         log_level = "error",
+--         auto_session_suppress_dirs = { "~/", "~/Projects", "~/Downloads", "/" },
+--       }
+--     end
+--   }
+
+--   -- Treesitter support
+--   use {
+--     'nvim-treesitter/nvim-treesitter',
+--     branch = "master"
+--   }
+
+--   -- LSP autocompletion
+--   use {
+--     'hrsh7th/cmp-nvim-lsp',
+--     branch = "main"
+--   }
+
+--   use {
+--     'hrsh7th/cmp-buffer',
+--     branch = "main"
+--   }
+--   use {
+--     'hrsh7th/cmp-path',
+--     branch = "main"
+--   }
+--   use {
+--     'hrsh7th/cmp-cmdline',
+--     branch = "main"
+--   }
+--   use {
+--     'hrsh7th/nvim-cmp',
+--     branch = "main"
+--   }
+
+--   use {
+--     'https://github.com/saadparwaiz1/cmp_luasnip',
+--     branch = "master"
+--   }
+
+--   use {
+--     'https://github.com/L3MON4D3/LuaSnip',
+--     branch = "master"
+--   }
+
+--   -- Java LSP client plugin
+--   use {
+--     'https://github.com/mfussenegger/nvim-jdtls',
+--     branch = "master"
+--   }
+
+--   -- Find, Filter, Preview, Pick.
+--   use {
+--     'nvim-telescope/telescope.nvim',
+--     tag = '0.1.2',
+--   }
+
+--   -- nvim-dap client
+--   use {
+--     'https://github.com/mfussenegger/nvim-dap',
+--     branch = "master"
+--   }
+
+--   -- dap ui
+--   use {
+--     'https://github.com/rcarriga/nvim-dap-ui',
+--     requires = {"mfussenegger/nvim-dap", "nvim-neotest/nvim-nio"},
+--     branch = "master"
+--   }
+
+--   -- Scala lsp: nvim-metals
+--   use {
+--     'scalameta/nvim-metals',
+--     requires = { "nvim-lua/plenary.nvim" },
+--     branch = "main"
+--   }
+-- end)
+
+
+-- -- NVIM-TREE
+-- function NvimTreeSetup()
+--   vim.g.loaded_netrw = 1
+--   vim.g.loaded_netrwPlugin = 1
+
+--   -- leader-g open tree
+--   map(
+--     'n',
+--     '<leader>g',
+--     ':NvimTreeToggle<CR>',
+--     default_opts
+--   )
+
+--   require("nvim-tree").setup({
+--     renderer = {
+--       group_empty = true,
+--     },
+--     filters = {
+--       git_ignored = false,
+--       dotfiles = false,
+--       git_clean = false,
+--       no_buffer = false,
+--       custom = {},
+--       exclude = {},
+--     }
+--   })
+-- end
+
+-- NvimTreeSetup()
+
+
+-- -- BUFFERLINE
+-- function BufferLineSetup()
+--   require('bufferline').setup {
+--     options = {
+--       mode = "buffers",                    -- set to "tabs" to only show tabpages instead
+--       close_command = "bdelete! %d",       -- can be a string | function, see "Mouse actions"
+--       -- close_command = "NvimTreeClose",       -- can be a string | function, see "Mouse actions"
+--       right_mouse_command = "bdelete! %d", -- can be a string | function, see "Mouse actions"
+--       left_mouse_command = "buffer %d",    -- can be a string | function, see "Mouse actions"
+--       middle_mouse_command = nil,          -- can be a string | function, see "Mouse actions"
+--       -- NOTE: this plugin is designed with this icon in mind,
+--       -- and so changing this is NOT recommended, this is intended
+--       -- as an escape hatch for people who cannot bear it for whatever reason
+--       indicator = {
+--         icon = '▎', -- this should be omitted if indicator style is not 'icon'
+--         style = 'icon',
+--       },
+--       buffer_close_icon = '',
+--       modified_icon = '●',
+--       close_icon = '',
+--       left_trunc_marker = '',
+--       right_trunc_marker = '',
+--     },
+--   }
+-- end
+
+-- BufferLineSetup()
+
+-- -- NVIM-LSPCONFIG
+-- function NvimLspConfigSetup()
+--   local capabilities = vim.lsp.protocol.make_client_capabilities()
+--   capabilities.textDocument.completion.completionItem.snippetSupport = true
+--   require('lspconfig').tsserver.setup {}
+--   require('lspconfig').svelte.setup {}
+--   require('lspconfig').cssls.setup {}
+--   require('lspconfig').pyright.setup {}
+--   require('lspconfig').hls.setup {
+--     filetypes = { 'haskell', 'lhaskell', 'cabal' },
+--   }
+--   require('lspconfig').html.setup {
+--     capabilities = capabilities
+--   }
+--   require('lspconfig').lua_ls.setup {
+--     on_init = function(client)
+--       local path = client.workspace_folders[1].name
+--       if not vim.loop.fs_stat(path .. '/.luarc.json') and not vim.loop.fs_stat(path .. '/.luarc.jsonc') then
+--         client.config.settings = vim.tbl_deep_extend('force', client.config.settings.Lua, {
+--           runtime = {
+--             -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+--             version = 'LuaJIT'
+--           },
+--           -- Make the server aware of Neovim runtime files
+--           workspace = {
+--             library = { vim.env.VIMRUNTIME }
+--             -- or pull in all of 'runtimepath'. NOTE: this is a lot slower
+--             -- library = vim.api.nvim_get_runtime_file("", true)
+--           }
+--         })
+
+--         client.notify("workspace/didChangeConfiguration", { settings = client.config.settings })
+--       end
+--       return true
+--     end
+--   }
+
+--   -- See `:help vim.diagnostic.*` for documentation on any of the below functions
+--   keymap('n', '<space>e', vim.diagnostic.open_float)
+--   keymap('n', '[d', vim.diagnostic.goto_prev)
+--   keymap('n', ']d', vim.diagnostic.goto_next)
+--   keymap('n', '<space>q', vim.diagnostic.setloclist)
+
+--   -- Use LspAttach autocommand to only map the following keys
+--   -- after the language server attaches to the current buffer
+--   autocmd('LspAttach', {
+--     group = augroup('UserLspConfig', {}),
+--     callback = function(ev)
+--       -- Enable completion triggered by <c-x><c-o>
+--       vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc'
+
+--       -- Buffer local mappings.
+--       -- See `:help vim.lsp.*` for documentation on any of the below functions
+--       local opts = { buffer = ev.buf }
+--       keymap('n', 'gD', vim.lsp.buf.declaration, opts)
+--       keymap('n', 'gd', vim.lsp.buf.definition, opts)
+--       keymap('n', 'K', vim.lsp.buf.hover, opts)
+--       keymap('n', 'gi', vim.lsp.buf.implementation, opts)
+--       keymap('n', '<C-k>', vim.lsp.buf.signature_help, opts)
+--       keymap('n', '<space>wa', vim.lsp.buf.add_workspace_folder, opts)
+--       keymap('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, opts)
+--       keymap('n', '<space>wl', function()
+--         print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+--       end, opts)
+--       keymap('n', '<space>D', vim.lsp.buf.type_definition, opts)
+--       keymap('n', '<space>rn', vim.lsp.buf.rename, opts)
+--       keymap({ 'n', 'v' }, '<leader>ca', vim.lsp.buf.code_action, opts)
+--       keymap('n', 'gr', vim.lsp.buf.references, opts)
+--       keymap('n', '<space>f', function()
+--         vim.lsp.buf.format { async = true }
+--       end, opts)
+--     end,
+--   })
+-- end
+
+-- NvimLspConfigSetup()
+
+-- function TreeSitterSetup()
+--   require('nvim-treesitter.configs').setup {
+--     -- A list of parser names, or "all" (the five listed parsers should always be installed)
+--     ensure_installed = { "c", "lua", "vim", "java", "scala", "go", "haskell" },
+
+--     -- Install parsers synchronously (only applied to `ensure_installed`)
+--     sync_install = false,
+
+--     -- Automatically install missing parsers when entering buffer
+--     -- Recommendation: set to false if you don't have `tree-sitter` CLI installed locally
+--     auto_install = true,
+
+--     highlight = {
+--       enable = true,
+--     },
+--     indent = {
+--       enable = false
+--     }
+--   }
+-- end
+
+-- -- TreeSitterSetup()
+
+-- function NvimCmpSetup()
+--   -- Add additional capabilities supported by nvim-cmp
+--   local capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+--   local lspconfig = require('lspconfig')
+
+--   -- Enable some language servers with the additional completion capabilities offered by nvim-cmp
+--   local servers = { 'lua_ls' }
+--   for _, lsp in ipairs(servers) do
+--     lspconfig[lsp].setup {
+--       -- on_attach = my_custom_on_attach,
+--       capabilities = capabilities,
+--     }
+--   end
+
+--   -- luasnip setup
+--   local luasnip = require 'luasnip'
+
+--   -- nvim-cmp setup
+--   local cmp = require 'cmp'
+--   cmp.setup {
+--     -- disable preselect
+--     preselect = cmp.PreselectMode.None,
+--     completeopt = {
+--       "menu",
+--       "menuone",
+--       "noselect",
+--       "noinsert"
+--     },
+
+--     snippet = {
+--       expand = function(args)
+--         luasnip.lsp_expand(args.body)
+--       end,
+--     },
+--     mapping = cmp.mapping.preset.insert({
+--       ['<C-u>'] = cmp.mapping.scroll_docs(-4), -- Up
+--       ['<C-d>'] = cmp.mapping.scroll_docs(4),  -- Down
+--       -- C-b (back) C-f (forward) for snippet placeholder navigation.
+--       ['<C-Space>'] = cmp.mapping.complete(),
+--       ['<CR>'] = cmp.mapping.confirm {
+--         behavior = cmp.ConfirmBehavior.Replace,
+--         select = false,
+--       },
+--       ['<Tab>'] = cmp.mapping(function(fallback)
+--         if cmp.visible() then
+--           cmp.select_next_item()
+--         elseif luasnip.expand_or_jumpable() then
+--           luasnip.expand_or_jump()
+--         else
+--           fallback()
+--         end
+--       end, { 'i', 's' }),
+--       ['<S-Tab>'] = cmp.mapping(function(fallback)
+--         if cmp.visible() then
+--           cmp.select_prev_item()
+--         elseif luasnip.jumpable(-1) then
+--           luasnip.jump(-1)
+--         else
+--           fallback()
+--         end
+--       end, { 'i', 's' }),
+--     }),
+--     sources = {
+--       { name = 'nvim_lsp' },
+--       { name = 'luasnip' },
+--       { name = 'buffer' },
+--       { name = 'path' },
+--     },
+--   }
+
+--   -- Set configuration for specific filetype.
+--   cmp.setup.filetype('gitcommit', {
+--     sources = cmp.config.sources({
+--       { name = 'git' }, -- You can specify the `git` source if [you were installed it](https://github.com/petertriho/cmp-git).
+--     }, {
+--       { name = 'buffer' },
+--     })
+--   })
+
+--   -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+--   cmp.setup.cmdline({ '/', '?' }, {
+--     mapping = cmp.mapping.preset.cmdline(),
+--     sources = {
+--       { name = 'buffer' }
+--     }
+--   })
+
+--   -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+--   cmp.setup.cmdline(':', {
+--     mapping = cmp.mapping.preset.cmdline(),
+--     sources = cmp.config.sources({
+--       { name = 'path' }
+--     }, {
+--       { name = 'cmdline' }
+--     })
+--   })
+-- end
+
+-- NvimCmpSetup()
+
+-- ---- TELESCOPE SETUP
+-- function TelescopeSetup()
+--   map('n', '<leader>ff', ':Telescope find_files hidden=true<CR>', default_opts)
+--   map('n', '<leader>fg', ':Telescope live_grep<CR>', default_opts)
+--   map('n', '<leader>fb', ':Telescope buffers<CR>', default_opts)
+--   map('n', '<leader>fh', ':Telescope help_tags<CR>', default_opts)
+
+--   local actions = require "telescope.actions"
+
+--   require('telescope').setup {
+--     defaults = {
+--       -- Default configuration for telescope goes here:
+--       -- config_key = value,
+--       file_ignore_patterns = { ".git/" },
+--       mappings = {
+--         i = {
+--           ["<esc>"] = require('telescope.actions').close,
+--           ["<C-j>"] = actions.move_selection_next,
+--           ["<C-k>"] = actions.move_selection_previous,
+--         },
+--         n = {
+--           ["<C-j>"] = actions.move_selection_next,
+--           ["<C-k>"] = actions.move_selection_previous,
+--         }
+--       },
+--       vimgrep_arguments = {
+--         'rg',
+--         '--color=never',
+--         '--no-heading',
+--         '--with-filename',
+--         '--line-number',
+--         '--column',
+--         '--smart-case',
+--         '--hidden'
+--       },
+--     },
+--     pickers = {
+--       -- Default configuration for builtin pickers goes here:
+--       -- picker_name = {
+--       --   picker_config_key = value,
+--       --   ...
+--       -- }
+--       -- Now the picker_config_key will be applied every time you call this
+--       -- builtin picker
+--     },
+--     extensions = {
+--       -- Your extension configuration goes here:
+--       -- extension_name = {
+--       --   extension_config_key = value,
+--       -- }
+--       -- please take a look at the readme of the extension you want to configure
+--     }
+--   }
+-- end
+
+-- TelescopeSetup()
+
+-- function NvimDapSetup()
+--   vim.fn.sign_define('DapBreakpoint', { text = '🔴', texthl = '', linehl = '', numhl = '' })
+--   vim.fn.sign_define('DapStopped', { text = '🔵', texthl = '', linehl = '', numhl = '' })
+
+--   keymap('n', '<F10>', function() require('dap').step_over() end, default_opts)
+--   keymap('n', '<F11>', function() require('dap').step_into() end, default_opts)
+--   keymap('n', '<F12>', function() require('dap').step_out() end, default_opts)
+--   keymap('n', '<leader>dc', function() require('dap').continue() end, default_opts)
+--   keymap('n', '<leader>dt', function()
+--     local dap = require('dap')
+--     local dapui = require('dapui')
+--     dap.terminate()
+--     dap.close()
+--     dapui.close()
+--     dap.repl.close()
+--   end, default_opts)
+--   keymap('n', '<leader>db', function() require('dap').toggle_breakpoint() end, default_opts)
+--   keymap('n', '<leader>dm', function() require('dap').clear_breakpoints() end, default_opts)
+--   keymap('n', '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input('Breakpoint condition: ')) end,
+--     default_opts)
+--   keymap('n', '<leader>lr', function() require('dap').set_breakpoint(nil, nil, vim.fn.input('Log point message: ')) end,
+--     default_opts)
+--   keymap('n', '<leader>dr', function() require('dap').repl.open() end, default_opts)
+--   keymap({ 'n', 'v' }, '<leader>dh', function()
+--     require('dap.ui.widgets').hover()
+--   end)
+--   keymap({ 'n', 'v' }, '<leader>dp', function()
+--     require('dap.ui.widgets').preview()
+--   end)
+--   keymap('n', '<leader>df', function()
+--     local widgets = require('dap.ui.widgets')
+--     widgets.centered_float(widgets.frames)
+--   end)
+--   keymap('n', '<leader>ds', function()
+--     local widgets = require('dap.ui.widgets')
+--     widgets.centered_float(widgets.scopes)
+--   end)
+
+--   require('dap.ext.vscode').load_launchjs()
+-- end
+
+-- NvimDapSetup()
+
+-- -- TODO COMMENTS SETUP
+-- function TodoCommentsSetup()
+--   require("todo-comments").setup {}
+
+--   -- Search todo via Telescope plugin
+--   map('n', '<leader>ft', ':TodoTelescope<CR>', default_opts)
+-- end
+
+-- TodoCommentsSetup()
+
+
+-- -- DAP-UI
+-- function DapUiSetup()
+--   local dapui = require('dapui')
+--   local dap = require('dap')
+--   dapui.setup(
+--     {
+--       controls = {
+--         element = "repl",
+--         enabled = true,
+--         icons = {
+--           disconnect = "",
+--           pause = "",
+--           play = "",
+--           run_last = "",
+--           step_back = "",
+--           step_into = "",
+--           step_out = "",
+--           step_over = "",
+--           terminate = ""
+--         }
+--       },
+--       element_mappings = {},
+--       expand_lines = true,
+--       floating = {
+--         border = "single",
+--         mappings = {
+--           close = { "q", "<Esc>" }
+--         }
+--       },
+--       force_buffers = true,
+--       icons = {
+--         collapsed = "",
+--         current_frame = "",
+--         expanded = ""
+--       },
+--       layouts = {
+--         {
+--           elements = {
+--             {
+--               id = "scopes",
+--               size = 0.15
+--             },
+--             {
+--               id = "breakpoints",
+--               size = 0.15
+--             },
+--             {
+--               id = "stacks",
+--               size = 0.15
+--             },
+--             {
+--               id = "watches",
+--               size = 0.15
+--             }
+--           },
+--           position = "left",
+--           size = 30
+--         },
+--         {
+--           elements = {
+--             {
+--               id = "repl",
+--               size = 1
+--             },
+--             -- {
+--             --   id = "console",
+--             --   size = 0.5
+--             -- }
+--           },
+--           position = "bottom",
+--           size = 10
+--         }
+--       },
+--       mappings = {
+--         edit = "e",
+--         expand = { "<CR>", "<2-LeftMouse>" },
+--         open = "o",
+--         remove = "d",
+--         repl = "r",
+--         toggle = "t"
+--       },
+--       render = {
+--         indent = 1,
+--         max_value_lines = 100
+--       }
+--     }
+--   )
+
+--   -- Add dap ui to dap
+--   dap.listeners.after.event_initialized["dapui_config"] = function()
+--     dapui.open()
+--   end
+--   dap.listeners.before.event_terminated["dapui_config"] = function()
+--     -- Do not close ui and repl to examine errors and results
+
+--     -- dapui.close()
+--   end
+--   dap.listeners.before.event_exited["dapui_config"] = function()
+--     -- Do not close ui and repl to examine errors and results
+
+--     -- dapui.close()
+--   end
+-- end
+
+-- DapUiSetup()
+
+-- -- INDENT-BLANKLINE (INDENT GUIDES)
+-- function IndentBlanklineSetup()
+--   require("ibl").setup({
+--     scope = { enabled = false },
+--   })
+-- end
+
+-- IndentBlanklineSetup()
+
+-- -- Nvim-metals (Scala lsp)
+-- function NvimMetalsSetup()
+--   local metals_config = require("metals").bare_config()
+
+--   metals_config.settings = {
+--     showImplicitArguments = true,
+--     excludedPackages = {},
+--   }
+
+--   -- Showing useful info in status bar, but status bar must to support this
+--   metals_config.init_options.statusBarProvider = "on"
+
+--   metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities()
+
+--   -- Debug settings if you're using nvim-dap
+--   -- local dap = require("dap")
+
+--   -- dap.configurations.scala = {
+--   --   {
+--   --     type = "scala",
+--   --     request = "launch",
+--   --     name = "RunOrTest",
+--   --     metals = {
+--   --       runType = "runOrTestFile",
+--   --     },
+--   --   },
+--   -- }
+
+--   metals_config.on_attach = function(client, bufnr)
+--     require("metals").setup_dap()
+--   end
+
+--   -- Autocmd that will actually be in charging of starting the whole thing
+--   local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+--   vim.api.nvim_create_autocmd("FileType", {
+--     -- java support is excluded
+--     pattern = { "scala", "sbt" },
+--     callback = function()
+--       require("metals").initialize_or_attach(metals_config)
+--     end,
+--     group = nvim_metals_group,
+--   })
+-- end
+-- NvimMetalsSetup()
+
+-- function LuaLineSetup()
+--   local function scalaMetals()
+--     if vim.g['metals_status'] then
+--       return vim.g['metals_status']
+--     else
+--       return ''
+--     end
+--   end
+--   require('lualine').setup {
+--     options = {
+--       icons_enabled = true,
+--       theme = 'auto',
+--       component_separators = { left = '', right = '' },
+--       section_separators = { left = '', right = '' },
+--       disabled_filetypes = {
+--         statusline = {},
+--         winbar = {},
+--       },
+--       ignore_focus = {},
+--       always_divide_middle = true,
+--       globalstatus = false,
+--       refresh = {
+--         statusline = 1000,
+--         tabline = 1000,
+--         winbar = 1000,
+--       }
+--     },
+--     sections = {
+--       lualine_a = { 'mode' },
+--       lualine_b = { 'branch', 'diff', 'diagnostics' },
+--       lualine_c = { 'filename', scalaMetals },
+--       lualine_x = { 'encoding', 'fileformat', 'filetype' },
+--       lualine_y = { 'progress' },
+--       lualine_z = { 'location' }
+--     },
+--     inactive_sections = {
+--       lualine_a = {},
+--       lualine_b = {},
+--       lualine_c = { 'filename' },
+--       lualine_x = { 'location' },
+--       lualine_y = {},
+--       lualine_z = {}
+--     },
+--     tabline = {},
+--     winbar = {},
+--     inactive_winbar = {},
+--     extensions = {}
+--   }
+-- end
+
+-- LuaLineSetup()
